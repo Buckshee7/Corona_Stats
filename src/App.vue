@@ -1,28 +1,40 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    <header-title></header-title>
+    <region-select></region-select>
+    <display-results></display-results>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import HeaderTitle from '@/components/HeaderTitle.vue'
+import RegionSelect from '@/components/RegionSelect.vue'
+import DisplayResults from '@/components/DisplayResults.vue'
 
 export default {
-  name: 'App',
+  name: 'app',
+  data(){
+    return{
+      worldData: ""
+  }},
   components: {
-    HelloWorld
+    'header-title':HeaderTitle,
+    'region-select':RegionSelect,
+    'display-results':DisplayResults
+  },
+  mounted(){
+    this.fetchWorldData();
+  },
+  methods:{
+    fetchWorldData(){
+      fetch('https://api.apify.com/v2/key-value-stores/tVaYRsPHLjNdNBu7S/records/LATEST?disableRedirect=true')
+      .then((resp)=>resp.json())
+      .then((data)=>this.worldData = data)
+    }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+
 </style>
