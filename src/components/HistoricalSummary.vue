@@ -4,7 +4,8 @@
 
 <script>
 export default {
-    name: 'historical-results'
+    name: 'historical-results',
+    props: ['dataForDisplay']
 }
 </script>
 

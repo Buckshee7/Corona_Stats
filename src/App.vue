@@ -74,7 +74,7 @@ export default {
       const returnData = {location:country, latest:{confirmed:null, deaths:null, recovered:null}, historical:[]}
 
       //for each day since records began (22/01/20) create an array with the date as the first item
-      const dates = this.getDateArray(moment('2020-01-20'), moment(), 'M[/]D[/]YY')
+      const dates = this.getDateArray(moment('2020-01-20'), moment().subtract(1, 'day'), 'M[/]D[/]YY')
 
       for (let key in returnData.latest) {
       //get latest
@@ -99,7 +99,7 @@ export default {
       }
 
       //add column headers to dates
-      dates.unshift(["Confirmed Cases", "Deaths", "Recovered"])
+      dates.unshift(["Date", "Confirmed Cases", "Deaths", "Recovered"])
       returnData.historical = dates
 
       return returnData
@@ -115,11 +115,24 @@ export default {
       }
 
       //sum up the values from every country in the same data structure
-      // for (let countryObject in countryObjects){
-      //   console.log
-      // }
+      returnData.latest.confirmed = countryObjects.reduce((accumulator, countryObject) => accumulator + countryObject.latest.confirmed,0)
+      returnData.latest.deaths = countryObjects.reduce((accumulator, countryObject) => accumulator + countryObject.latest.deaths,0)
+      returnData.latest.recovered = countryObjects.reduce((accumulator, countryObject) => accumulator + countryObject.latest.recovered,0)
 
-      // return returnData
+      const dates = this.getDateArray(moment('2020-01-20'), moment().subtract(1, 'day'), 'M[/]D[/]YY')
+      // for each date there needs to be a result in historical
+      for (let date of dates){
+        let worldValues = []
+        // each result need the 3 figures
+        for (let i=1; i<4; i++){
+          // add up the figures by going through every country and assign to temporary array
+          worldValues[i-1] = countryObjects.reduce((accumulator, countryObject) => {
+            return accumulator + countryObject.historical.find((dateList)=>{return dateList[0]=== date[0]})[i]
+          },0)
+        }
+        returnData.historical.push([date[0], worldValues[0], worldValues[1], worldValues[2]])
+      }
+      return returnData
     }
   },
 

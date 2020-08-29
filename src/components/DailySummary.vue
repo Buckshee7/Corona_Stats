@@ -4,7 +4,8 @@
 
 <script>
 export default {
-    name: 'daily-summary'
+    name: 'daily-summary',
+    props: ['dataForDisplay']
 }
 </script>
 

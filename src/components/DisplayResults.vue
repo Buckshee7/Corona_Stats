@@ -1,8 +1,8 @@
 <template>
     <div>
         <h2>Information</h2>
-        <daily-summary></daily-summary>
-        <historical-summary></historical-summary>
+        <daily-summary :dataForDisplay="dataForDisplay"></daily-summary>
+        <historical-summary :dataForDisplay="dataForDisplay"></historical-summary>
     </div>
 </template>
 
@@ -13,6 +13,7 @@ import HistoricalSummary from './HistoricalSummary.vue'
 
 export default {
     name: 'display-results',
+    props: ['dataForDisplay'],
     components: {
         'daily-summary': DailySummary,
         'historical-summary': HistoricalSummary
