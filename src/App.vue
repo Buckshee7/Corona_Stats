@@ -2,7 +2,7 @@
   <div>
     <header-title></header-title>
     <region-select :countries="countries"></region-select>
-    <display-results></display-results>
+    <display-results :dataForDisplay="dataForDisplay"></display-results>
   </div>
 </template>
 
@@ -60,11 +60,11 @@ export default {
       .then((data)=>this.worldData = data)
     },
 
-    getDateArray(startDate, endDate){
+    getDateArray(startDate, endDate, format){
       const dates = []
       const days = endDate.diff(startDate, 'days')
       for (let date = startDate.clone(); date < endDate; date=date.add(1, 'day')){
-        let newEntry = date.format('M[/]D[/]YY')
+        let newEntry = date.format(format)
         dates.push([newEntry])
       }
       return dates
@@ -73,10 +73,8 @@ export default {
     makeObjectFromCountry(country){
       const returnData = {location:country, latest:{confirmed:null, deaths:null, recovered:null}, historical:[]}
 
-      ////for each day since records began (22/01/20) create an array with the date as the first item
-      let dates = this.getDateArray(moment('2020-01-20'), moment())
-      console.log(dates)
-
+      //for each day since records began (22/01/20) create an array with the date as the first item
+      const dates = this.getDateArray(moment('2020-01-20'), moment(), 'M[/]D[/]YY')
 
       for (let key in returnData.latest) {
       //get latest
@@ -87,19 +85,41 @@ export default {
         //set to latest data
         returnData.latest[key] = total
 
-      //get historical
-
-
+      //get historical data for charts
+        for (let date of dates){
+          //total the values from countryLocations
+          let total = countryLocations.reduce((accumulator,location)=>{
+            //from the object with matching date if it exists
+            return accumulator + location.history[date[0]] ? location.history[date[0]] : 0
+          },0)
+          // I'll probably get told off here for modifying an array im looping through...........
+            // .....but its an array **within** the array im looping through so maybe thats not so bad
+          date.push(total)
+        }
       }
 
-      
-      //for each of confirmed,deaths,recovered; match the date and 
+      //add column headers to dates
+      dates.unshift(["Confirmed Cases", "Deaths", "Recovered"])
+      returnData.historical = dates
 
       return returnData
     },
+
     makeObjectFromWorld(){
       const returnData = {location:"World", latest:{confirmed:null, deaths:null, recovered:null}, historical:[]}
-      return returnData
+
+      //create list with object for every country
+      const countryObjects = []
+      for (let country of this.countries){
+        countryObjects.push(this.makeObjectFromCountry(country))
+      }
+
+      //sum up the values from every country in the same data structure
+      // for (let countryObject in countryObjects){
+      //   console.log
+      // }
+
+      // return returnData
     }
   },
 
