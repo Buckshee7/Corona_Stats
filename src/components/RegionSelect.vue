@@ -1,10 +1,40 @@
 <template>
-    <h2>Region Select</h2>
+    <div>
+        <h2>Region Select</h2>
+        <label>Choose a Country from this list: </label>
+        <input list="options" v-model="searchValue" v-on:change="selectCountry()" />
+        <datalist id="options">
+            <option v-for="(country, index) in filteredCountries" :key="index" :country="country">{{ country }}</option>
+        </datalist>
+    </div>
 </template>
 
 <script>
+import { eventBus } from '../main.js';
+
 export default {
-    name: 'region-select'
+    name: 'region-select',
+    data(){
+        return {
+            searchValue: ""
+        }
+    },
+    props: ['countries'],
+    computed: {
+        filteredCountries: function(){
+            return this.countries.filter((country)=>{
+                return country.toLowerCase().includes(this.searchValue.toLowerCase());
+            })
+        }
+    },
+    methods: {
+        selectCountry(){
+            // create event only if input is a listed country
+            if (this.countries.some((country) => country.toLowerCase() === this.searchValue.toLowerCase())) {
+                eventBus.$emit("select-country", this.searchValue);
+            }
+        }
+    }
 }
 </script>
 
