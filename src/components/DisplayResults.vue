@@ -1,8 +1,13 @@
 <template>
     <div>
         <h2>Information</h2>
-        <daily-summary :dataForDisplay="dataForDisplay"></daily-summary>
-        <historical-summary :dataForDisplay="dataForDisplay"></historical-summary>
+        <div v-if="dataForDisplay">
+            <daily-summary  :dataForDisplay="dataForDisplay"></daily-summary>
+            <historical-summary :dataForDisplay="dataForDisplay"></historical-summary>
+        </div>
+        <div v-if="!dataForDisplay">
+            <p>Loading</p>
+        </div>
     </div>
 </template>
 

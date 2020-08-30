@@ -1,11 +1,16 @@
 <template>
     <div>
         <h2>Region Select</h2>
-        <label>Choose a Country from this list: </label>
-        <input list="options" v-model="searchValue" v-on:change="selectCountry()" />
-        <datalist id="options">
-            <option v-for="(country, index) in filteredCountries" :key="index" :country="country">{{ country }}</option>
-        </datalist>
+        <div v-if="countries">
+            <label>Search for a country: </label>
+            <input list="options" v-model="searchValue" v-on:change="selectCountry()" />
+            <datalist id="options">
+                <option v-for="(country, index) in filteredCountries" :key="index" :country="country">{{ country }}</option>
+            </datalist>
+        </div>
+        <div v-if="!countries">
+            <p>Loading</p>
+        </div>
     </div>
 </template>
 

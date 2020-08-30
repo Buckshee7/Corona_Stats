@@ -35,21 +35,22 @@ export default {
     // makes list of countries to pass into region-select
       // multiple provinces for some countries so need to avoid duplicates
     countries: function(){
-      const countries = []
       if (this.worldData) {
+        const countries = []
         this.worldData.confirmed.locations.forEach((location) => {
           if (!countries.includes(location.country)){
             countries.push(location.country)
           }
         })
+        return countries
       }
-      return countries
+      
     },
     dataForDisplay: function(){
       if (this.worldData) {
         return this.selectedCountry ? this.makeObjectFromCountry(this.selectedCountry) : this.makeObjectFromWorld()
       }
-      return {}
+      return ""
     }
   },
 
@@ -71,7 +72,7 @@ export default {
     },
 
     makeObjectFromCountry(country){
-      const returnData = {location:country, latest:{confirmed:null, deaths:null, recovered:null}, historical:[]}
+      const returnData = {location:country, latest:{confirmed:null, deaths:null, recovered:null}, historicalTotals:[], historicalChange:[]}
 
       //for each day since records began (22/01/20) create an array with the date as the first item
       const dates = this.getDateArray(moment('2020-01-20'), moment().subtract(1, 'day'), 'M[/]D[/]YY')
@@ -98,15 +99,33 @@ export default {
         }
       }
 
+      //work out daily change from daily totals
+      const historicalChange = []
+      // first entry has no calculation to make
+      historicalChange.push(dates[0])
+      for (let i = 1; i<dates.length; i++){ //i is index of dates array
+        // puts in the date from dates as first item
+        let newDate = [dates[i][0]]
+        //subtraction of total from previous date to get daily change
+        for (let j=1; j<4; j++){ // j is index of inner date array
+          let change = (dates[i][j] - dates[i-1][j])>=0 ? (dates[i][j] - dates[i-1][j]) : 0 //removes anomolous data where change is < 0
+          newDate.push(change)
+        }
+        historicalChange.push(newDate)
+      }
+      //add column headers to dates
+      historicalChange.unshift(["Date", "Confirmed Cases", "Deaths", "Recovered"])
+      returnData.historicalChange = historicalChange
+
       //add column headers to dates
       dates.unshift(["Date", "Confirmed Cases", "Deaths", "Recovered"])
-      returnData.historical = dates
+      returnData.historicalTotals = dates
 
       return returnData
     },
 
     makeObjectFromWorld(){
-      const returnData = {location:"World", latest:{confirmed:null, deaths:null, recovered:null}, historical:[]}
+      const returnData = {location:"World", latest:{confirmed:null, deaths:null, recovered:null}, historicalTotals:[], historicalChange:[]}
 
       //create list with object for every country
       const countryObjects = []
@@ -119,19 +138,38 @@ export default {
       returnData.latest.deaths = countryObjects.reduce((accumulator, countryObject) => accumulator + countryObject.latest.deaths,0)
       returnData.latest.recovered = countryObjects.reduce((accumulator, countryObject) => accumulator + countryObject.latest.recovered,0)
 
+      //get array of dates
       const dates = this.getDateArray(moment('2020-01-20'), moment().subtract(1, 'day'), 'M[/]D[/]YY')
-      // for each date there needs to be a result in historical
+
+      ////The code below is repeated for both historicalTotals and histroicalChange - could be refactored to make more DRY
+      // for each date there needs to be a result in historicalTotals
       for (let date of dates){
         let worldValues = []
         // each result need the 3 figures
         for (let i=1; i<4; i++){
           // add up the figures by going through every country and assign to temporary array
           worldValues[i-1] = countryObjects.reduce((accumulator, countryObject) => {
-            return accumulator + countryObject.historical.find((dateList)=>{return dateList[0]=== date[0]})[i]
+            return accumulator + countryObject.historicalTotals.find((dateList)=>{return dateList[0]=== date[0]})[i]
           },0)
         }
-        returnData.historical.push([date[0], worldValues[0], worldValues[1], worldValues[2]])
+        returnData.historicalTotals.push([date[0], worldValues[0], worldValues[1], worldValues[2]])
       }
+      returnData.historicalTotals.unshift(["Date", "Confirmed Cases", "Deaths", "Recovered"])
+
+      // for each date there needs to be a result in historicalChange
+      for (let date of dates){
+        let worldValues = []
+        // each result need the 3 figures
+        for (let i=1; i<4; i++){
+          // add up the figures by going through every country and assign to temporary array
+          worldValues[i-1] = countryObjects.reduce((accumulator, countryObject) => {
+            return accumulator + countryObject.historicalChange.find((dateList)=>{return dateList[0]=== date[0]})[i]
+          },0)
+        }
+        returnData.historicalChange.push([date[0], worldValues[0], worldValues[1], worldValues[2]])
+      }
+      returnData.historicalChange.unshift(["Date", "Confirmed Cases", "Deaths", "Recovered"])
+
       return returnData
     }
   },
