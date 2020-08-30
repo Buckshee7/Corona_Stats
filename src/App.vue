@@ -21,10 +21,19 @@ export default {
 
     eventBus.$on('select-country', (country) => {
       this.selectedCountry = country
+      this.startDate = moment('2020-01-20')
+      this.endDate = moment().subtract(1, 'day')
     })
 
     eventBus.$on('return-to-world', ()=> {
       this.selectedCountry = ""
+      this.startDate = moment('2020-01-20')
+      this.endDate = moment().subtract(1, 'day')
+    })
+
+    eventBus.$on('filter-by-date', (dataObject)=> {
+      this.startDate = dataObject.start
+      this.endDate = dataObject.end
     })
   },
 
@@ -32,6 +41,8 @@ export default {
     return{
       worldData: "",
       selectedCountry: "",
+      startDate: moment('2020-01-20'),
+      endDate: moment().subtract(1, 'day')
     }
   },
 
@@ -67,8 +78,7 @@ export default {
 
     getDateArray(startDate, endDate, format){
       const dates = []
-      const days = endDate.diff(startDate, 'days')
-      for (let date = startDate.clone(); date < endDate; date=date.add(1, 'day')){
+      for (let date = startDate.clone(); date <= endDate; date=date.add(1, 'day')){
         let newEntry = date.format(format)
         dates.push([newEntry])
       }
@@ -79,7 +89,8 @@ export default {
       const returnData = {location:country, latest:{confirmed:null, deaths:null, recovered:null}, historicalTotals:[], historicalChange:[]}
 
       //for each day since records began (22/01/20) create an array with the date as the first item
-      const dates = this.getDateArray(moment('2020-01-20'), moment().subtract(1, 'day'), 'M[/]D[/]YY')
+        //dates must go back 1 day further than startDate so daily change can be calculated
+      const dates = this.getDateArray(this.startDate.clone().subtract(1,'day'), this.endDate, 'M[/]D[/]YY')
 
       for (let key in returnData.latest) {
       //get latest
@@ -103,10 +114,11 @@ export default {
         }
       }
 
+    
       //work out daily change from daily totals
       const historicalChange = []
       // first entry has no calculation to make
-      historicalChange.push(dates[0])
+      // historicalChange.push(dates[0])
       for (let i = 1; i<dates.length; i++){ //i is index of dates array
         // puts in the date from dates as first item
         let newDate = [dates[i][0]]
@@ -121,6 +133,8 @@ export default {
       historicalChange.unshift(["Date", "Confirmed Cases", "Deaths", "Recovered"])
       returnData.historicalChange = historicalChange
 
+      //removes first date as it was only needed so that daily change could be calculated for teh startDate
+      dates.splice(0,1)
       //add column headers to dates
       dates.unshift(["Date", "Confirmed Cases", "Deaths", "Recovered"])
       returnData.historicalTotals = dates
@@ -128,13 +142,13 @@ export default {
       return returnData
     },
 
-    makeObjectFromWorld(){
+    makeObjectFromWorld(startDate, endDate){
       const returnData = {location:"World", latest:{confirmed:null, deaths:null, recovered:null}, historicalTotals:[], historicalChange:[]}
 
       //create list with object for every country
       const countryObjects = []
       for (let country of this.countries){
-        countryObjects.push(this.makeObjectFromCountry(country))
+        countryObjects.push(this.makeObjectFromCountry(country, startDate, endDate))
       }
 
       //sum up the values from every country in the same data structure
@@ -143,14 +157,15 @@ export default {
       returnData.latest.recovered = countryObjects.reduce((accumulator, countryObject) => accumulator + countryObject.latest.recovered,0)
 
       //get array of dates
-      const dates = this.getDateArray(moment('2020-01-20'), moment().subtract(1, 'day'), 'M[/]D[/]YY')
-
+      const dates = this.getDateArray(this.startDate, this.endDate, 'M[/]D[/]YY')
+      
       ////The code below is repeated for both historicalTotals and histroicalChange - could be refactored to make more DRY
       // for each date there needs to be a result in historicalTotals
       for (let date of dates){
         let worldValues = []
         // each result need the 3 figures
         for (let i=1; i<4; i++){
+          
           // add up the figures by going through every country and assign to temporary array
           worldValues[i-1] = countryObjects.reduce((accumulator, countryObject) => {
             return accumulator + countryObject.historicalTotals.find((dateList)=>{return dateList[0]=== date[0]})[i]
