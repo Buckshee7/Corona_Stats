@@ -7,9 +7,10 @@
             <datalist id="options">
                 <option v-for="(country, index) in filteredCountries" :key="index" :country="country">{{ country }}</option>
             </datalist>
+            <button v-if="selectedCountry" v-on:click="returnToWorld">Return to World View</button>
         </div>
         <div v-if="!countries">
-            <p>Loading</p>
+            <p>Thinking about it...</p>
         </div>
     </div>
 </template>
@@ -24,7 +25,7 @@ export default {
             searchValue: ""
         }
     },
-    props: ['countries'],
+    props: ['countries', 'selectedCountry'],
     computed: {
         filteredCountries: function(){
             return this.countries.filter((country)=>{
@@ -38,6 +39,10 @@ export default {
             if (this.countries.some((country) => country.toLowerCase() === this.searchValue.toLowerCase())) {
                 eventBus.$emit("select-country", this.searchValue);
             }
+        },
+        returnToWorld(){
+            this.searchValue = ""
+            eventBus.$emit('return-to-world')
         }
     }
 }

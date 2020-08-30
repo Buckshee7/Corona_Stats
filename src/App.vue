@@ -1,7 +1,7 @@
 <template>
   <div>
     <header-title></header-title>
-    <region-select :countries="countries"></region-select>
+    <region-select :countries="countries" :selectedCountry="selectedCountry"></region-select>
     <display-results :dataForDisplay="dataForDisplay"></display-results>
   </div>
 </template>
@@ -21,6 +21,10 @@ export default {
 
     eventBus.$on('select-country', (country) => {
       this.selectedCountry = country
+    })
+
+    eventBus.$on('return-to-world', ()=> {
+      this.selectedCountry = ""
     })
   },
 

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h3>{{ dataForDisplay.location }}</h3>
+        <h3>Latest Statistics: {{ dataForDisplay.location }}</h3>
         <p>Total Confirmed Cases: {{ dataForDisplay.latest.confirmed }}</p>
         <p>Total Deaths: {{ dataForDisplay.latest.deaths }}</p>
         <p>Total Recoveries: {{ dataForDisplay.latest.recovered }}</p>

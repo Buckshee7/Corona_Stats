@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h3>Historical Results</h3>
+        <h3>Historical Statistics</h3>
         <GChart
             type="LineChart"
             :data="dataForDisplay.historicalTotals"

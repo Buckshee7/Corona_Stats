@@ -6,7 +6,7 @@
             <historical-summary :dataForDisplay="dataForDisplay"></historical-summary>
         </div>
         <div v-if="!dataForDisplay">
-            <p>Loading</p>
+            <p>Thinking about it...</p>
         </div>
     </div>
 </template>
